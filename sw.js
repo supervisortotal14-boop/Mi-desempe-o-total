@@ -1,5 +1,5 @@
-const CACHE = 'desempeno-v1';
-const ARCHIVOS = ['./', './index.html', './logo-total.png', './logo-dpo.png'];
+const CACHE = 'desempeno-v2';
+const ARCHIVOS = ['./', './index.html', './icon-192.png', './logo-total.png', './logo-dpo.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ARCHIVOS).catch(() => {})));
