@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mi desempeño total</title>
+<meta name="theme-color" content="#0a1f44">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Mi desempeño total">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh;
+    background: #0a1f44; color: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  .pantalla { min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding: 24px; text-align: center; }
+  h1 { margin: 10px 0 4px; font-size: 28px; letter-spacing: 1px; }
+  .sub { color: #9fb3d9; margin-bottom: 24px; }
+  input {
+    width: 260px; padding: 14px; font-size: 18px; text-align: center;
+    border: 2px solid #3b5ea8; border-radius: 10px;
+    background: #102a5c; color: #fff; outline: none;
+  }
+  input:focus { border-color: #fff; }
+  button {
+    margin-top: 14px; padding: 14px 40px; font-size: 16px; font-weight: bold;
+    border: none; border-radius: 10px; background: #fff; color: #0a1f44; cursor: pointer;
+  }
+  button:disabled { opacity: .6; cursor: wait; }
+  #error { color: #ff9b9b; margin-top: 14px; min-height: 20px; }
+
+  .logos { display: flex; align-items: center; justify-content: center; gap: 14px;
+    background: #fff; border-radius: 14px; padding: 10px 18px; margin-bottom: 18px; }
+  .logos img { height: 56px; width: auto; display: block; }
+  .logos-mini { padding: 6px 12px; margin: 0; gap: 10px; }
+  .logos-mini img { height: 36px; }
+
+  .ruta { width: 100%; max-width: 420px; overflow: hidden; margin-bottom: 10px; }
+  .camion { animation: andar 4s ease-in-out infinite alternate; }
+  @keyframes andar { from { transform: translateX(-30px); } to { transform: translateX(30px); } }
+  .linea { height: 4px; background: repeating-linear-gradient(90deg,#3b5ea8 0 30px,transparent 30px 50px); }
+
+  #resultados { display: none; padding: 20px; max-width: 900px; margin: 0 auto; }
+  .encabezado { display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 10px; border-bottom: 2px solid #3b5ea8; padding-bottom: 14px; margin-bottom: 20px; }
+  .encabezado h2 { margin: 0; }
+  .salir { background: transparent; color: #fff; border: 2px solid #fff; padding: 8px 20px; margin: 0; }
+
+  .selector { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+  .selector label { color: #9fb3d9; font-size: 14px; }
+  select {
+    padding: 10px 14px; font-size: 16px; border-radius: 10px;
+    border: 2px solid #3b5ea8; background: #102a5c; color: #fff; outline: none;
+  }
+
+  .grilla { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .tarjeta { background: #102a5c; border: 1px solid #27489a; border-radius: 12px; padding: 14px; }
+  .tarjeta .et { font-size: 12px; color: #9fb3d9; text-transform: uppercase; letter-spacing: .5px; }
+  .tarjeta .val { font-size: 22px; font-weight: bold; margin-top: 6px; word-break: break-word; }
+  .tarjeta .val.rojo { color: #ff5c5c; }
+  .tarjeta .val.verde { color: #3ddc84; }
+  .tarjeta .val.amarillo { color: #ffd23f; }
+
+  #instalar { display: none; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap;
+    background: #102a5c; border: 1px solid #3b5ea8; border-radius: 12px; padding: 10px 14px; margin-top: 22px; font-size: 14px; }
+  #instalar button { margin: 0; padding: 8px 18px; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div class="pantalla" id="login">
+  <div class="logos">
+    <img src="logo-total.png" alt="Total">
+    <img src="logo-dpo.png" alt="DPO">
+  </div>
+  <div class="ruta">
+    <svg class="camion" width="180" height="100" viewBox="0 0 180 100">
+      <rect x="5" y="20" width="100" height="50" rx="4" fill="#fff"/>
+      <path d="M105 35 h35 l22 20 v15 h-57 z" fill="#3b5ea8"/>
+      <path d="M115 40 h20 l14 14 h-34 z" fill="#0a1f44"/>
+      <rect x="5" y="70" width="157" height="6" fill="#9fb3d9"/>
+      <circle cx="35" cy="78" r="12" fill="#222"/><circle cx="35" cy="78" r="5" fill="#ccc"/>
+      <circle cx="75" cy="78" r="12" fill="#222"/><circle cx="75" cy="78" r="5" fill="#ccc"/>
+      <circle cx="136" cy="78" r="12" fill="#222"/><circle cx="136" cy="78" r="5" fill="#ccc"/>
+    </svg>
+    <div class="linea"></div>
+  </div>
+  <h1>PORTAL DE DESEMPEÑO</h1>
+  <div class="sub">Ingresa tu DNI para ver tus resultados</div>
+  <input id="dni" type="tel" inputmode="numeric" placeholder="DNI sin puntos" maxlength="10">
+  <button id="btn" onclick="ingresar()">INGRESAR</button>
+  <div id="error"></div>
+  <div id="instalar"><span>📲 Instalá Mi desempeño total en tu celular</span><button id="btnInstalar">Instalar</button></div>
+</div>
+
+<div id="resultados">
+  <div class="encabezado">
+    <h2 id="nombre"></h2>
+    <div class="logos logos-mini">
+      <img src="logo-total.png" alt="Total">
+      <img src="logo-dpo.png" alt="DPO">
+    </div>
+    <button class="salir" onclick="salir()">Salir</button>
+  </div>
+  <div class="selector">
+    <label for="fecha">Ver resultados del:</label>
+    <select id="fecha"></select>
+  </div>
+  <div class="grilla" id="grilla"></div>
+</div>
+
+<script>
+  // URL de tu aplicación web de Apps Script del portal de desempeño (debe terminar en /exec)
+  var API = 'PEGAR_AQUI_LA_URL_DE_TU_APP_WEB/exec';
+
+  var REGISTROS = [];
+
+  document.getElementById('dni').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') ingresar();
+  });
+
+  function norm(s) {
+    return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  }
+
+  function ingresar() {
+    var dni = document.getElementById('dni').value;
+    var btn = document.getElementById('btn');
+    var err = document.getElementById('error');
+    err.textContent = '';
+    if (API.indexOf('/exec') < 0 || API.indexOf('PEGAR') >= 0) { err.textContent = 'Falta configurar la URL de la aplicación (API).'; return; }
+    btn.disabled = true; btn.textContent = 'BUSCANDO...';
+    fetch(API + '?api=buscar&dni=' + encodeURIComponent(dni))
+      .then(function(r) { return r.json(); })
+      .then(function(r) {
+        btn.disabled = false; btn.textContent = 'INGRESAR';
+        if (!r.ok) { err.textContent = r.mensaje; return; }
+        mostrar(r.registros);
+      })
+      .catch(function() {
+        btn.disabled = false; btn.textContent = 'INGRESAR';
+        err.textContent = 'Error de conexión. Intenta de nuevo.';
+      });
+  }
+
+  function pintar(reg) {
+    var grilla = document.getElementById('grilla');
+    grilla.innerHTML = '';
+    reg.campos.forEach(function(c) {
+      var et = norm(c.etiqueta);
+      if (et === 'nombre y apellido' || et.indexOf('actualiz') >= 0) return;
+      var t = document.createElement('div'); t.className = 'tarjeta';
+      var e = document.createElement('div'); e.className = 'et'; e.textContent = c.etiqueta;
+      var v = document.createElement('div');
+      v.className = 'val' + (c.estado ? ' ' + c.estado : '');
+      v.textContent = c.valor || '-';
+      t.appendChild(e); t.appendChild(v); grilla.appendChild(t);
+    });
+  }
+
+  function mostrar(registros) {
+    REGISTROS = registros;
+    document.getElementById('nombre').textContent = registros[0].nombre;
+
+    var sel = document.getElementById('fecha');
+    sel.innerHTML = '';
+    registros.forEach(function(r, i) {
+      var o = document.createElement('option');
+      o.value = i;
+      o.textContent = r.fecha + (i === 0 ? ' (más reciente)' : '');
+      sel.appendChild(o);
+    });
+    sel.onchange = function() { pintar(REGISTROS[this.value]); };
+    pintar(registros[0]);
+
+    document.getElementById('login').style.display = 'none';
+    document.getElementById('resultados').style.display = 'block';
+  }
+
+  function salir() {
+    document.getElementById('dni').value = '';
+    document.getElementById('resultados').style.display = 'none';
+    document.getElementById('login').style.display = 'flex';
+  }
+
+  // --- Instalación como app ---
+  var diferido = null;
+  var yaInstalada = window.matchMedia('(display-mode: standalone)').matches;
+  window.addEventListener('beforeinstallprompt', function(e) {
+    e.preventDefault(); diferido = e;
+    if (!yaInstalada) document.getElementById('instalar').style.display = 'flex';
+  });
+  document.getElementById('btnInstalar').addEventListener('click', function() {
+    if (!diferido) return;
+    diferido.prompt();
+    diferido.userChoice.then(function() {
+      diferido = null; document.getElementById('instalar').style.display = 'none';
+    });
+  });
+  window.addEventListener('appinstalled', function() { document.getElementById('instalar').style.display = 'none'; });
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function() {});
+</script>
+</body>
+</html>
