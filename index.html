@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Mi desempeño total</title>
 <meta name="theme-color" content="#0a1f44">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Mi desempeño total">
@@ -69,6 +69,8 @@
   #instalar { display: none; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap;
     background: #102a5c; border: 1px solid #3b5ea8; border-radius: 12px; padding: 10px 14px; margin-top: 22px; font-size: 14px; }
   #instalar button { margin: 0; padding: 8px 18px; font-size: 14px; }
+  #ayudaInstalar { display: none; background: #102a5c; border: 1px solid #3b5ea8; border-radius: 12px;
+    padding: 10px 14px; margin-top: 22px; font-size: 14px; max-width: 320px; line-height: 1.4; color: #9fb3d9; }
 </style>
 </head>
 <body>
@@ -96,6 +98,7 @@
   <button id="btn" onclick="ingresar()">INGRESAR</button>
   <div id="error"></div>
   <div id="instalar"><span>📲 Instalá Mi desempeño total en tu celular</span><button id="btnInstalar">Instalar</button></div>
+  <div id="ayudaInstalar"></div>
 </div>
 
 <div id="resultados">
@@ -190,9 +193,13 @@
 
   // --- Instalación como app ---
   var diferido = null;
-  var yaInstalada = window.matchMedia('(display-mode: standalone)').matches;
+  var yaInstalada = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  var esIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  var ayuda = document.getElementById('ayudaInstalar');
+
   window.addEventListener('beforeinstallprompt', function(e) {
     e.preventDefault(); diferido = e;
+    ayuda.style.display = 'none';
     if (!yaInstalada) document.getElementById('instalar').style.display = 'flex';
   });
   document.getElementById('btnInstalar').addEventListener('click', function() {
@@ -202,8 +209,30 @@
       diferido = null; document.getElementById('instalar').style.display = 'none';
     });
   });
-  window.addEventListener('appinstalled', function() { document.getElementById('instalar').style.display = 'none'; });
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function() {});
+  window.addEventListener('appinstalled', function() {
+    document.getElementById('instalar').style.display = 'none'; ayuda.style.display = 'none';
+  });
+
+  // Respaldo: si el navegador no ofrece el botón automático, mostramos cómo instalar a mano
+  if (!yaInstalada) {
+    if (esIOS) {
+      ayuda.innerHTML = '📲 Para instalar: abrí esta página en <b>Safari</b>, tocá <b>Compartir</b> y elegí <b>"Agregar a pantalla de inicio"</b>.';
+      ayuda.style.display = 'block';
+    } else {
+      setTimeout(function() {
+        if (!diferido) {
+          ayuda.innerHTML = '📲 Para instalar: tocá el menú <b>⋮</b> del navegador y elegí <b>"Instalar app"</b> o <b>"Agregar a pantalla principal"</b>.';
+          ayuda.style.display = 'block';
+        }
+      }, 3000);
+    }
+  }
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(function() {});
+    });
+  }
 </script>
 </body>
 </html>
